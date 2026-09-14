@@ -59,9 +59,7 @@ def scrape_website(url: str) -> str:
         return f"Error scraping website: {e}"
 
 print(
-    scrape_website.invoke(
-        "https://www.coursera.org/articles/what-is-hugging-face"
-    )
+    scrape_website.invoke("https://www.coursera.org/articles/what-is-hugging-face")
 )
 
 
