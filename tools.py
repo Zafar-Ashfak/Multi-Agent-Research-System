@@ -1,7 +1,7 @@
 from langchain.tools import tool
+from tavily import TavilyClient
 import requests
 from bs4 import BeautifulSoup
-from tavily import TavilyClient
 import os
 from rich import print
 
@@ -10,7 +10,7 @@ load_dotenv()
 
 tavily = TavilyClient(api_key=os.getenv('TAVILY_API_KEY'))
 
-# Creating tool
+# Creating tool for searching information and links
 @tool
 def web_search(query : str) -> str:
     """
@@ -18,13 +18,15 @@ def web_search(query : str) -> str:
     Return Titles, URLs, and Snippets.
     """
 
-    results = tavily.search(query=query, max_results=3)
-    out = []
+    results = tavily.search(query, max_results=3)
+    outputs = []
+    br = "\n____________________________________________________________________________________________\n"
     for r in results['results']:
-        out.append(
-            f"Title: {r['title']}\nURL: {r['url']}\nSnippet: {r['content'][:300]}\r"
+        outputs.append(
+            f"URL: {r['url']}\n\nTitle: {r['title']}\n\nContent: {r['content'][:500]}\r"
         )
 
-    return "\n------\n.".join(out)
+    return br.join(outputs)
 
-print(web_search.invoke('What is RAG'))
+
+print(web_search.invoke('What is NLP in AI?'))
