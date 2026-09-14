@@ -18,7 +18,13 @@ def web_search(query : str) -> str:
     Return Titles, URLs, and Snippets.
     """
 
-    results = tavily.search(query=query, max_results=5)
-    return results
+    results = tavily.search(query=query, max_results=3)
+    out = []
+    for r in results['results']:
+        out.append(
+            f"Title: {r['title']}\nURL: {r['url']}\nSnippet: {r['content'][:300]}\r"
+        )
 
-print(web_search.invoke('What are the recent news of America and Iran war?'))
+    return "\n------\n.".join(out)
+
+print(web_search.invoke('What is RAG'))
