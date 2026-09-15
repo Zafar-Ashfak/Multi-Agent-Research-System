@@ -14,7 +14,6 @@ def run_research_pipeline(topic: str) -> dict:
         "messages": [("user", f"Find recent, reliable and detailed information about: {topic}")]
     })
 
-
     state['search_results'] = search_result['messages'][-1].content
     print("\nSearch result", state['search_results'])
 
@@ -66,7 +65,7 @@ def run_research_pipeline(topic: str) -> dict:
 
     return state
 
-# Main function
+# Run the research pipeline in the main dunder function
 if __name__ == '__main__':
     topic = input("\nEnter a research topic: ")
     run_research_pipeline(topic)
