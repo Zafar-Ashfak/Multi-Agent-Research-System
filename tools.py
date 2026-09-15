@@ -3,7 +3,6 @@ from tavily import TavilyClient
 import requests
 from bs4 import BeautifulSoup
 import os
-from rich import print
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -23,7 +22,7 @@ def web_search(query : str) -> str:
     br = "\n____________________________________________________________________________________________\n"
     for r in results['results']:
         outputs.append(
-            f"URL: {r['url']}\n\nTitle: {r['title']}\n\nContent: {r['content'][:500]}\r"
+            f"Title: {r['title']}\n\nURL: {r['url']}\n\nContent: {r['content'][:500]}\r"
         )
 
     return br.join(outputs)
