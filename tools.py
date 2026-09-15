@@ -58,9 +58,9 @@ def scrape_website(url: str) -> str:
     except requests.RequestException as e:
         return f"Error scraping website: {e}"
 
-print(
-    scrape_website.invoke("https://www.coursera.org/articles/what-is-hugging-face")
-)
+# print(
+#     scrape_website.invoke("https://www.coursera.org/articles/what-is-hugging-face")
+# )
 
 
 # print(web_search.invoke('What is NLP in AI?'))
