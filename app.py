@@ -1,14 +1,8 @@
 """
-Streamlit UI for the Multi-Agent Research System.
+ResearchForge AI — Streamlit UI
 
-Drop this file into the same folder as agents.py, pipeline.py, and tools.py,
-then run:
-
+Run:
     streamlit run streamlit_app.py
-
-It reuses extract_urls() from pipeline.py and the same chains/tools from
-agents.py / tools.py, but drives them step-by-step so the UI can show live
-progress instead of only printing to the terminal.
 """
 
 import streamlit as st
@@ -19,69 +13,210 @@ from tools import web_search, scrape_url
 
 
 # ======================================================
-# PAGE CONFIG
+# PAGE CONFIG & STATE
 # ======================================================
 
 st.set_page_config(
     page_title="ResearchForge AI",
     page_icon="🔎",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
-if "result" not in st.session_state:
-    st.session_state.result = None
-if "running" not in st.session_state:
-    st.session_state.running = False
-if "theme" not in st.session_state:
-    st.session_state.theme = "light"
+st.session_state.setdefault("messages", [])
+st.session_state.setdefault("theme", "dark")
 
 
 # ======================================================
-# THEME (light / dark toggle)
+# THEME
 # ======================================================
 
-LIGHT_THEME = {
+DARK = {
+    "bg": "#000000",
+    "text": "#ececec",
+    "muted": "#9b9b9b",
+    "bubble": "#2f2f2f",
+    "card": "#161616",
+    "border": "#1f1f1f",
+    "hover": "#171717",
+    "input": "#212121",
+}
+
+LIGHT = {
     "bg": "#ffffff",
-    "secondary_bg": "#f5f6f8",
-    "text": "#1a1a1a",
+    "text": "#0d0d0d",
+    "muted": "#6e6e80",
+    "bubble": "#f4f4f4",
     "card": "#ffffff",
-    "border": "#e0e2e6",
-}
-
-DARK_THEME = {
-    "bg": "#0e1117",
-    "secondary_bg": "#161a23",
-    "text": "#f2f2f2",
-    "card": "#1c212c",
-    "border": "#2b3140",
+    "border": "#e5e5e5",
+    "hover": "#ececec",
+    "input": "#f4f4f4",
 }
 
 
-def inject_theme_css(theme: dict) -> None:
+def apply_theme():
+    t = DARK if st.session_state.theme == "dark" else LIGHT
+
     st.markdown(
         f"""
         <style>
-        .stApp {{
-            background-color: {theme["bg"]};
-            color: {theme["text"]};
+        html, body, .stApp {{
+            font-family: -apple-system, BlinkMacSystemFont,
+            "Segoe UI", sans-serif;
         }}
+
+        .stApp, section[data-testid="stSidebar"] {{
+            background: {t["bg"]} !important;
+            color: {t["text"]} !important;
+        }}
+
+        .main .block-container {{
+            max-width: 48rem;
+            padding-top: 2.5rem;
+            padding-bottom: 9rem;
+            margin: auto;
+        }}
+
         section[data-testid="stSidebar"] {{
-            background-color: {theme["secondary_bg"]};
+            border-right: 1px solid {t["border"]};
         }}
-        div[data-testid="stTextArea"] textarea {{
-            background-color: {theme["card"]};
-            color: {theme["text"]};
-            border: 1px solid {theme["border"]};
+
+        section[data-testid="stSidebar"] * {{
+            color: {t["text"]} !important;
         }}
-        div[data-testid="stStatus"], div[data-testid="stExpander"] {{
-            background-color: {theme["card"]};
-            border: 1px solid {theme["border"]};
+
+        section[data-testid="stSidebar"] button {{
+            background: transparent !important;
+            border: none !important;
+            border-radius: 10px !important;
+            text-align: left;
         }}
-        .stTabs [data-baseweb="tab"] {{
-            color: {theme["text"]};
+
+        section[data-testid="stSidebar"] button:hover {{
+            background: {t["hover"]} !important;
         }}
+
         h1, h2, h3, h4, p, label, span {{
-            color: {theme["text"]};
+            color: {t["text"]};
+        }}
+
+        .rf-header {{
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 1.05rem;
+            padding: .25rem .1rem .75rem;
+        }}
+
+        .rf-empty {{
+            text-align: center;
+            margin-top: 22vh;
+            font-size: 2rem;
+            font-weight: 500;
+        }}
+
+        div[data-testid="stChatMessage"] {{
+            background: transparent !important;
+            border: none !important;
+            padding: .75rem 0 !important;
+        }}
+
+        div[data-testid="stChatMessage"]:has(
+            div[data-testid="stChatMessageAvatarUser"]
+        ) {{
+            display: flex;
+            flex-direction: row-reverse;
+        }}
+
+        div[data-testid="stChatMessage"]:has(
+            div[data-testid="stChatMessageAvatarUser"]
+        ) div[data-testid="stChatMessageContent"] {{
+            background: {t["bubble"]} !important;
+            border-radius: 20px;
+            padding: .65rem 1.1rem;
+            max-width: 70%;
+        }}
+
+        div[data-testid="stChatMessageAvatarUser"] {{
+            display: none;
+        }}
+
+        div[data-testid="stChatMessage"]:has(
+            div[data-testid="stChatMessageAvatarAssistant"]
+        ) div[data-testid="stChatMessageContent"] {{
+            background: transparent !important;
+            max-width: 100%;
+        }}
+
+        div[data-testid="stChatMessageAvatarAssistant"] {{
+            background: #10a37f !important;
+            border-radius: 50%;
+        }}
+
+        /* ChatGPT-style composer */
+        div[data-testid="stBottom"] {{
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }}
+
+        div[data-testid="stChatInput"] {{
+            max-width: 48rem;
+            margin: auto;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }}
+
+        div[data-testid="stChatInput"] > div,
+        div[data-testid="stChatInput"] form,
+        div[data-testid="stChatInput"] [data-baseweb="textarea"],
+        div[data-testid="stChatInput"] [data-baseweb="base-input"] {{
+            background: {t["input"]} !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            border-radius: 28px !important;
+        }}
+
+        div[data-testid="stChatInput"] textarea {{
+            background: {t["input"]} !important;
+            color: {t["text"]} !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            border-radius: 28px !important;
+            padding: 14px 58px 14px 18px !important;
+        }}
+
+        div[data-testid="stChatInput"] textarea::placeholder {{
+            color: {t["muted"]} !important;
+        }}
+
+        div[data-testid="stChatInput"]:focus-within,
+        div[data-testid="stChatInput"] *:focus,
+        div[data-testid="stChatInput"] *:focus-within {{
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }}
+
+        div[data-testid="stChatInput"] button {{
+            background: {t["muted"]} !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 50% !important;
+        }}
+
+        div[data-testid="stChatInput"] button:hover {{
+            background: {t["text"]} !important;
+        }}
+
+        div[data-testid="stStatus"],
+        div[data-testid="stExpander"] {{
+            background: {t["card"]};
+            border: 1px solid {t["border"]};
+            border-radius: 12px;
         }}
         </style>
         """,
@@ -89,68 +224,99 @@ def inject_theme_css(theme: dict) -> None:
     )
 
 
-inject_theme_css(DARK_THEME if st.session_state.theme == "dark" else LIGHT_THEME)
+apply_theme()
 
 
 # ======================================================
-# PIPELINE RUNNER (mirrors pipeline.run_research_pipeline,
-# but reports progress back to the UI at each step)
+# PIPELINE
 # ======================================================
 
-def run_pipeline_with_ui(topic: str) -> dict:
-    state = {}
+def run_pipeline(topic):
+    with st.status("Searching the web...", expanded=True) as status:
+        results = web_search.invoke({"query": topic})
+        status.update(label="Web search complete", state="complete")
 
-    # --- STEP 1: WEB SEARCH -----------------------------------------
-    with st.status("Step 1/4 · Searching the web...", expanded=True) as status:
-        state["search_results"] = web_search.invoke({"query": topic})
-        st.write(f"Search complete for **{topic}**.")
-        status.update(label="Step 1/4 · Web search complete", state="complete")
-
-    # --- STEP 2: SELECT + SCRAPE SOURCES ------------------------------
-    with st.status("Step 2/4 · Reading top sources...", expanded=True) as status:
-        urls = extract_urls(state["search_results"])
+    with st.status("Reading top sources...", expanded=True) as status:
+        urls = extract_urls(results)
 
         if not urls:
-            status.update(label="Step 2/4 · No sources found", state="error")
             raise ValueError("No URLs were found in the search results.")
 
-        selected_urls = urls[:3]
-        scraped_sources = []
+        sources = urls[:3]
+        scraped = []
 
-        for index, url in enumerate(selected_urls, start=1):
-            st.write(f"Reading source {index}/{len(selected_urls)}: {url}")
+        for i, url in enumerate(sources, 1):
+            st.write(f"Reading source {i}/{len(sources)}: {url}")
             content = scrape_url.invoke({"url": url})
-            scraped_sources.append(
-                f"\nSOURCE {index}\nURL: {url}\n\nCONTENT:\n{content}\n"
-            )
+            scraped.append(f"SOURCE {i}\nURL: {url}\n\n{content}")
 
-        state["scraped_content"] = "\n\n" + "\n\n".join(scraped_sources)
-        state["sources"] = selected_urls
-        status.update(label="Step 2/4 · Sources read", state="complete")
+        scraped_content = "\n\n".join(scraped)
+        status.update(label="Sources read", state="complete")
 
-    # --- STEP 3: WRITER ------------------------------------------------
-    with st.status("Step 3/4 · Writer is drafting the report...", expanded=True) as status:
-        research_combined = (
-            f"SEARCH RESULTS:\n{state['search_results']}\n\n"
-            f"DETAILED SCRAPED CONTENT:\n{state['scraped_content']}"
+    research = (
+        f"SEARCH RESULTS:\n{results}\n\n"
+        f"DETAILED SCRAPED CONTENT:\n{scraped_content}"
+    )
+
+    with st.status("Drafting the report...", expanded=True) as status:
+        report = writer_chain.invoke({
+            "topic": topic,
+            "research": research,
+        })
+        status.update(label="Draft report ready", state="complete")
+
+    with st.status("Critic is reviewing...", expanded=True) as status:
+        feedback = critic_chain.invoke({
+            "topic": topic,
+            "research": research,
+            "report": report,
+        })
+        status.update(label="Review complete", state="complete")
+
+    return {
+        "topic": topic,
+        "report": getattr(report, "content", report),
+        "feedback": getattr(feedback, "content", feedback),
+        "sources": sources,
+        "scraped_content": scraped_content,
+        "search_results": results,
+    }
+
+
+# ======================================================
+# RESULT
+# ======================================================
+
+def render_result(result):
+
+    report, feedback = result["report"], result["feedback"]
+
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["📄 Report", "🧐 Critic Feedback", "🔗 Sources", "🗒️ Raw Results"]
+    )
+
+    with tab1:
+        st.markdown(report)
+        st.download_button(
+            "Download report (.md)",
+            report,
+            file_name=f"{result['topic'].replace(' ', '_')}_report.md",
+            mime="text/markdown",
+            use_container_width=True,
         )
-        state["report"] = writer_chain.invoke({
-            "topic": topic,
-            "research": research_combined,
-        })
-        state["research_combined"] = research_combined
-        status.update(label="Step 3/4 · Draft report ready", state="complete")
 
-    # --- STEP 4: CRITIC --------------------------------------------------
-    with st.status("Step 4/4 · Critic is reviewing the report...", expanded=True) as status:
-        state["feedback"] = critic_chain.invoke({
-            "topic": topic,
-            "research": state["research_combined"],
-            "report": state["report"],
-        })
-        status.update(label="Step 4/4 · Review complete", state="complete")
+    with tab2:
+        st.markdown(feedback)
 
-    return state
+    with tab3:
+        for i, url in enumerate(result["sources"], 1):
+            st.markdown(f"**Source {i}:** [{url}]({url})")
+
+        with st.expander("View scraped content"):
+            st.text(result["scraped_content"])
+
+    with tab4:
+        st.text(result["search_results"])
 
 
 # ======================================================
@@ -158,105 +324,120 @@ def run_pipeline_with_ui(topic: str) -> dict:
 # ======================================================
 
 with st.sidebar:
-    st.header("🔎 Research System")
-    st.caption(
-        "A multi-agent pipeline that searches the web, reads the top "
-        "sources, drafts a report, and has it critiqued — all automatically."
-    )
-    st.divider()
+
     st.markdown(
-        "**Pipeline steps**\n"
-        "1. Web search\n"
-        "2. Scrape top 3 sources\n"
-        "3. Writer drafts report\n"
-        "4. Critic reviews report"
-    )
-
-
-# ======================================================
-# MAIN
-# ======================================================
-
-def _get_text(x):
-    """writer_chain/critic_chain may return a string or an object with .content"""
-    return getattr(x, "content", x)
-
-
-title_col_left, title_col_center, title_col_right = st.columns([1, 6, 1])
-
-with title_col_center:
-    st.markdown(
-        "<h1 style='text-align:center; margin-bottom:0;'>ResearchForge AI</h1>",
+        """
+        <div class="rf-header">
+            <span>🔎 ResearchForge AI</span>
+            <span>🔍 ⤢</span>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
-with title_col_right:
-    toggle_icon = "🌙" if st.session_state.theme == "light" else "☀️"
-    if st.button(toggle_icon, key="theme_toggle", help="Toggle dark / light mode"):
-        st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+    if st.button("✏️  New chat", use_container_width=True):
+        st.session_state.messages = []
         st.rerun()
 
-with st.form("research_form"):
-    topic = st.text_area(
-        "Research topic",
-        placeholder="e.g. Impact of AI on renewable energy adoption",
-        height=160,
-    )
-    btn_col_left, btn_col_right = st.columns([5, 1])
-    with btn_col_right:
-        submitted = st.form_submit_button("Run Research", type="primary")
+    st.caption("Chats")
 
-if submitted:
-    if not topic.strip():
-        st.warning("Please enter a research topic.")
+    topics = [
+        m["topic"]
+        for m in st.session_state.messages
+        if m["role"] == "user"
+    ]
+
+    if topics:
+        for i, topic in enumerate(reversed(topics)):
+            label = topic if len(topic) <= 34 else topic[:31] + "..."
+            st.button(
+                label,
+                use_container_width=True,
+                disabled=True,
+                key=f"history_{i}",
+            )
     else:
-        st.session_state.running = True
-        try:
-            st.session_state.result = run_pipeline_with_ui(topic.strip())
-            st.session_state.result["topic"] = topic.strip()
-        except Exception as e:
-            st.error(f"The pipeline failed: {e}")
-            st.session_state.result = None
-        finally:
-            st.session_state.running = False
+        st.caption("No chats yet")
+
+    st.write("")
+
+    icon = "☀️" if st.session_state.theme == "dark" else "🌙"
+
+    if st.button(icon, key="theme_toggle"):
+        st.session_state.theme = (
+            "light"
+            if st.session_state.theme == "dark"
+            else "dark"
+        )
+        st.rerun()
+
 
 # ======================================================
-# RESULTS
+# CHAT
 # ======================================================
 
-result = st.session_state.result
+if not st.session_state.messages:
 
-if result:
-    st.divider()
-    st.subheader(f"Results for: {result['topic']}")
-
-    report_text = _get_text(result["report"])
-    feedback_text = _get_text(result["feedback"])
-
-    tab_report, tab_feedback, tab_sources, tab_raw = st.tabs(
-        ["📄 Report", "🧐 Critic Feedback", "🔗 Sources", "🗒️ Raw Search Results"]
+    st.markdown(
+        '<div class="rf-empty">What\'s on your mind today?</div>',
+        unsafe_allow_html=True,
     )
 
-    with tab_report:
-        st.markdown(report_text)
-        st.download_button(
-            "Download report (.md)",
-            data=report_text,
-            file_name=f"{result['topic'].replace(' ', '_')}_report.md",
-            mime="text/markdown",
-            use_container_width=True,
-        )
-
-    with tab_feedback:
-        st.markdown(feedback_text)
-
-    with tab_sources:
-        for i, url in enumerate(result.get("sources", []), start=1):
-            st.markdown(f"**Source {i}:** [{url}]({url})")
-        with st.expander("View scraped content"):
-            st.text(result["scraped_content"])
-
-    with tab_raw:
-        st.text(result["search_results"])
 else:
-    st.info("Enter a topic above and click **Run Research** to get started.")
+
+    for message in st.session_state.messages:
+
+        if message["role"] == "user":
+
+            with st.chat_message("user"):
+                st.markdown(message["topic"])
+
+        else:
+
+            with st.chat_message("assistant", avatar="✨"):
+
+                if message.get("error"):
+                    st.error(
+                        f"The pipeline failed: {message['error']}"
+                    )
+                else:
+                    render_result(message["result"])
+
+
+# ======================================================
+# INPUT
+# ======================================================
+
+if prompt := st.chat_input("Ask anything"):
+
+    topic = prompt.strip()
+
+    if topic:
+
+        st.session_state.messages.append({
+            "role": "user",
+            "topic": topic,
+        })
+
+        with st.chat_message("user"):
+            st.markdown(topic)
+
+        with st.chat_message("assistant", avatar="✨"):
+
+            try:
+                result = run_pipeline(topic)
+                render_result(result)
+
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "result": result,
+                })
+
+            except Exception as e:
+
+                st.error(f"The pipeline failed: {e}")
+
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "error": str(e),
+                })
