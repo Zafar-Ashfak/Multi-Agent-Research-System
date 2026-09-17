@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 from tavily import TavilyClient
 import os
 from dotenv import load_dotenv
-from rich import print
 
 load_dotenv()
 
@@ -38,7 +37,7 @@ def scrape_url(url: str) -> str:
         soup = BeautifulSoup(resp.text, "html.parser")
         for tag in soup(["script", "style", "nav", "footer"]):
             tag.decompose()
-        return soup.get_text(separator=" ", strip=True)[:3000]
+        return soup.get_text(separator=" ", strip=True)[:8000]
     except Exception as e:
         return f"Could not scrape URL: {str(e)}"
 
