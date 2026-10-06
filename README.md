@@ -24,15 +24,6 @@ ResearchForge AI is a multi-agent research system designed to provide accurate a
 
 <br />
 
-<h2>How It Works</h2>
-
-<p>
-The user enters a research topic, and the system first searches the web using Tavily. It then selects the top sources and extracts useful information from those websites. The Writer Agent uses the collected research to generate the final answer, while the Critic Agent reviews the response for accuracy, relevance, source quality, and unsupported claims.
-</p>
-
-<br />
-
-<br />
 
 <h2>Workflow</h2>
 
@@ -100,6 +91,12 @@ The user enters a research topic, and the system first searches the web using Ta
 </pre>
 
 <br />
+
+<h2>How It Works</h2>
+
+<p>
+The user enters a research topic, and the system first searches the web using Tavily. It then selects the top sources and extracts useful information from those websites. The Writer Agent uses the collected research to generate the final answer, while the Critic Agent reviews the response for accuracy, relevance, source quality, and unsupported claims.
+</p>
 
 <br />
 
