@@ -1,8 +1,8 @@
-<h1>ResearchForge AI – Multi-Agent Research System</h1>
+<h1>Intellica – Autonomous Multi-Agent Research System</h1>
 <br />
 
 <p>
-ResearchForge AI is a multi-agent research system designed to provide accurate and research-based answers to user queries. It uses web search to find relevant sources, scrapes useful information from selected websites, and uses AI agents to generate and review the final response. The system includes a <strong>Web Search Tool</strong>, <strong>Reader Agent</strong>, <strong>Writer Agent</strong>, and <strong>Critic Agent</strong> to create a complete research workflow. It also provides a clean Streamlit interface with chat history, source links, raw research results, critic feedback, and downloadable research reports.
+Intellica is a multi-agent research system designed to provide accurate and research-based answers to user queries. It uses web search to find relevant sources, scrapes useful information from selected websites, and uses AI agents to generate and review the final response. The system includes a <strong>Web Search Tool</strong>, <strong>Reader Agent</strong>, <strong>Writer Agent</strong>, and <strong>Critic Agent</strong> to create a complete research workflow. It also provides a clean Streamlit interface with chat history, source links, raw research results, critic feedback, and downloadable research reports.
 </p>
 
 <br />
