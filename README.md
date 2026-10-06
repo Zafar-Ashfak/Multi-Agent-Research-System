@@ -116,6 +116,6 @@ The user enters a research topic, and the system first searches the web using Ta
 <br/>
 <strong>Environment Management:</strong> python-dotenv
 <br/>
-<strong>Tools & Platforms:</strong> Git, GitHub, VS Code
+<strong>Tools & Platforms:</strong> Git, GitHub, PyCharm
 
 <br />
