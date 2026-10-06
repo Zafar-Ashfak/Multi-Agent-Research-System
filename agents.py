@@ -1,27 +1,32 @@
 from langchain.agents import create_agent
-from langchain_ollama import ChatOllama
+from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
 from tools import scrape_url
-
+import os
 
 # ==================================================
 # LLM
 # ==================================================
 
-llm = ChatOllama(
-    model="llama3.2:3b",
-    temperature=0
-)
+def get_llm():
+    llm = HuggingFaceEndpoint(
+        repo_id="openai/gpt-oss-120b",
+        temperature=0,
+        huggingfacehub_api_token=os.getenv("HF_TOKEN"),
+    )
+
+    return ChatHuggingFace(llm=llm)
 
 
 # ==================================================
 # READER AGENT
 # ==================================================
 
-def build_reader_agent():
+llm = get_llm()
 
+def build_reader_agent():
     return create_agent(
         model=llm,
         tools=[scrape_url],
@@ -120,9 +125,7 @@ Important:
     )
 ])
 
-
 writer_chain = writer_prompt | llm | StrOutputParser()
-
 
 # ==================================================
 # CRITIC
@@ -202,5 +205,6 @@ Final Verdict:
     )
 ])
 
-
 critic_chain = critic_prompt | llm | StrOutputParser()
+
+
