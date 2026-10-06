@@ -37,66 +37,66 @@ The user enters a research topic, and the system first searches the web using Ta
 <h2>Workflow</h2>
 
 <pre>
-                                             ┌──────────────────────┐
-                                             │     User Query       │
-                                             │   Research Topic     │
-                                             └──────────┬───────────┘
-                                                        │
-                                                        ▼
-                                             ┌──────────────────────┐
-                                             │     Web Search       │
-                                             │     Tavily API       │
-                                             └──────────┬───────────┘
-                                                        │
-                                                        ▼
-                                             ┌──────────────────────┐
-                                             │   Top 3 Sources      │
-                                             │    URL Selection     │
-                                             └──────────┬───────────┘
-                                                        │
-                                                        ▼
-                                             ┌──────────────────────┐
-                                             │    Web Scraping      │
-                                             │ Requests + Beautiful │
-                                             │        Soup          │
-                                             └──────────┬───────────┘
-                                                        │
-                                                        ▼
-                                             ┌──────────────────────┐
-                                             │  Research Content    │
-                                             │ Search + Scraped Data│
-                                             └──────────┬───────────┘
-                                                        │
-                                                        ▼
-                                             ┌──────────────────────┐
-                                             │    Writer Agent      │
-                                             │  GPT-OSS-120B +      │
-                                             │      LangChain       │
-                                             └──────────┬───────────┘
-                                                        │
-                                                        ▼
-                                             ┌──────────────────────┐
-                                             │   Research Report    │
-                                             └──────────┬───────────┘
-                                                        │
-                                                        ▼
-                                             ┌──────────────────────┐
-                                             │     Critic Agent     │
-                                             │ Accuracy + Sources + │
-                                             │   Hallucination Check│
-                                             └──────────┬───────────┘
-                                                        │
-                                                        ▼
-                                        ┌──────────────────────────────┐
-                                        │        Final Output          │
-                                        │ Report │ Sources │ Feedback  │
-                                        └──────────────┬───────────────┘
-                                                       │
-                                                       ▼
-                                             ┌──────────────────────┐
-                                             │  Streamlit Interface │
-                                             │  View + Download MD  │
-                                             └──────────────────────┘
+                                     ┌──────────────────────┐
+                                     │     User Query       │
+                                     │   Research Topic     │
+                                     └──────────┬───────────┘
+                                                │
+                                                ▼
+                                     ┌──────────────────────┐
+                                     │     Web Search       │
+                                     │     Tavily API       │
+                                     └──────────┬───────────┘
+                                                │
+                                                ▼
+                                     ┌──────────────────────┐
+                                     │   Top 3 Sources      │
+                                     │    URL Selection     │
+                                     └──────────┬───────────┘
+                                                │
+                                                ▼
+                                     ┌──────────────────────┐
+                                     │    Web Scraping      │
+                                     │ Requests + Beautiful │
+                                     │        Soup          │
+                                     └──────────┬───────────┘
+                                                │
+                                                ▼
+                                     ┌──────────────────────┐
+                                     │  Research Content    │
+                                     │ Search + Scraped Data│
+                                     └──────────┬───────────┘
+                                                │
+                                                ▼
+                                     ┌──────────────────────┐
+                                     │    Writer Agent      │
+                                     │  GPT-OSS-120B +      │
+                                     │      LangChain       │
+                                     └──────────┬───────────┘
+                                                │
+                                                ▼
+                                     ┌──────────────────────┐
+                                     │   Research Report    │
+                                     └──────────┬───────────┘
+                                                │
+                                                ▼
+                                     ┌──────────────────────┐
+                                     │     Critic Agent     │
+                                     │ Accuracy + Sources + │
+                                     │   Hallucination Check│
+                                     └──────────┬───────────┘
+                                                │
+                                                ▼
+                                ┌──────────────────────────────┐
+                                │        Final Output          │
+                                │ Report │ Sources │ Feedback  │
+                                └──────────────┬───────────────┘
+                                               │
+                                               ▼
+                                     ┌──────────────────────┐
+                                     │  Streamlit Interface │
+                                     │  View + Download MD  │
+                                     └──────────────────────┘
 </pre>
 
 <br />
